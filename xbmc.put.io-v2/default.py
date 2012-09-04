@@ -19,6 +19,7 @@
 
 import os
 import sys
+import re
 
 import xbmc
 import xbmcaddon as xa
@@ -60,6 +61,16 @@ def populateDir(pluginUrl, pluginId, listing):
 
         if "application/x-directory" != item.content_type:
             listItem.setProperty('IsPlayable', 'true')
+            listItem.setProperty('Video', 'true')
+            niceTitle = re.sub(r'\.\w{3}$', '', item.name)
+            niceTitle = re.sub(r'\.', ' ', niceTitle)
+
+            episodeMatch = re.match(r'(.*?)S(\d+)E(\d+)', niceTitle)
+
+            if episodeMatch:
+                niceTitle = "%s: Season %s Episode %s" % episodeMatch.groups()
+
+            listItem.setInfo(type='video', infoLabels={'Title': niceTitle})
 
         xp.addDirectoryItem(
             pluginId,
@@ -143,7 +154,6 @@ class PutioApiHandler(object):
 
 try:
     putio = PutioApiHandler(addon.getAddonInfo("id"))
-    xbmc.log(">>>>>> script parameters: %s" % sys.argv)
     if itemId:
         item = putio.getItem(itemId)
         if item.content_type:
