@@ -46,18 +46,23 @@ class PutioAuthFailureException(Exception):
 def populateDir(pluginUrl, pluginId, listing):    
    
     for item in listing:                        
-        if item.screenshot:
-            screenshot = item.screenshot
-        else:
-            screenshot = item.icon
-
         url = "%s?%s" % (pluginUrl, item.id)
-        listItem = xg.ListItem(
-            item.name,
-            item.name,
-            screenshot,
-            screenshot
-        )
+
+        if "application/x-directory" == item.content_type:
+            folderName = "[F] %s" % item.name
+            listItem = xg.ListItem(folderName, folderName)
+        else:
+            if item.screenshot:
+                screenshot = item.screenshot
+            else:
+                screenshot = item.icon
+
+            listItem = xg.ListItem(
+                item.name,
+                item.name,
+                screenshot,
+                screenshot
+            )
 
         if "application/x-directory" != item.content_type:
             listItem.setProperty('IsPlayable', 'true')
