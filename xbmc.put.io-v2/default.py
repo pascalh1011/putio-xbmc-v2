@@ -35,7 +35,6 @@ pluginId = int(sys.argv[1])
 itemId = sys.argv[2].lstrip("?")
 addon = xa.Addon(PLUGIN_ID)
 
-
 class PutioAuthFailureException(Exception):
     def __init__(self, header, message, duration = 10000, icon = "error.png"):
         self.header = header
@@ -59,6 +58,9 @@ def populateDir(pluginUrl, pluginId, listing):
             screenshot
         )
 
+        if "application/x-directory" != item.content_type:
+            listItem.setProperty('IsPlayable', 'true')
+
         xp.addDirectoryItem(
             pluginId,
             url,
@@ -70,13 +72,19 @@ def populateDir(pluginUrl, pluginId, listing):
 
 
 def play(item, subtitle=None):
-    player = xbmc.Player()
-    if item.is_mp4_available:
-        player.play(item.mp4_stream_url)
-    else:
-        player.play(item.stream_url)    
+    item = xg.ListItem(path=item.stream_url)
+    xp.setResolvedUrl(handle=int(sys.argv[1]), succeeded=True, listitem=item)
+
     if subtitle:
+        player = xbmc.Player()
         player.setSubtitles(subtitle)
+
+    #if item.is_mp4_available:
+    #    player.play(item.mp4_stream_url)
+    #else:
+    #    player.play(item.stream_url)    
+    #if subtitle:
+    #    player.setSubtitles(subtitle)
 
 class PutioApiHandler(object):
     """
@@ -135,6 +143,7 @@ class PutioApiHandler(object):
 
 try:
     putio = PutioApiHandler(addon.getAddonInfo("id"))
+    xbmc.log(">>>>>> script parameters: %s" % sys.argv)
     if itemId:
         item = putio.getItem(itemId)
         if item.content_type:
